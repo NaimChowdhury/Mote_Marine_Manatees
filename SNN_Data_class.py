@@ -26,22 +26,22 @@ class SiameseNetworkDataset(object):
         for file in sorted(os.listdir(self.path)):
             file_names.append(str(file))
 
-        for i in range(len(file_names)):    #file in enumerate(sorted(os.listdir(self.path))):
-            path = os.path.join(self.path, file)
-            # Read image with openCV
-            img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-            # Rezize image
-            img = cv2.resize(img, (self.img_size, self.img_size), interpolation= cv2.INTER_AREA)
-            
+        for i in range(len(file_names)): 
             # Check if they are pairs
             if file_names[i][-5] == 'A' and file_names[i+1][-5] == 'B':
                 img0 = os.path.join(self.path, file_names[i])
                 img1 = os.path.join(self.path, file_names[i+1])
                 img2 = os.path.join(self.path, file_names[np.random.randint(0, len(file_names))])
 
+                # Read the image
                 img0 = cv2.imread(img0, cv2.IMREAD_UNCHANGED)
                 img1 = cv2.imread(img1, cv2.IMREAD_UNCHANGED)
                 img2 = cv2.imread(img2, cv2.IMREAD_UNCHANGED)
+
+                # Resize according to IMG_SIZE
+                img0 = cv2.resize(img0, (self.img_size, self.img_size), interpolation= cv2.INTER_AREA)
+                img1 = cv2.resize(img1, (self.img_size, self.img_size), interpolation= cv2.INTER_AREA)
+                img2 = cv2.resize(img2, (self.img_size, self.img_size), interpolation= cv2.INTER_AREA)
 
                 # append to training_data
                 self.training_data.append([np.array(img0), np.array(img1), np.eye(2)[self.LABELS['similar'] ]])
@@ -54,11 +54,11 @@ class SiameseNetworkDataset(object):
 
 
 siamese = SiameseNetworkDataset(dataset_folder, 128)
-siamese.make_data('out1')
+siamese.make_data('out2')
 
 """ 
 The Data can be loaded from any other file by loading it through numpy:
 np.load('out.npy', allow_pickle=True)
 """
 
-
+#training_data = np.load('/Users/rosagradilla/Documents/summer20/Manatee/out1.npy', allow_pickle=True)
