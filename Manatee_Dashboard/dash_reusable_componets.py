@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 10 14:35:07 2020
-
-@author: natewagner
-"""
-
-
 import base64
 from io import BytesIO as _BytesIO
 import time
