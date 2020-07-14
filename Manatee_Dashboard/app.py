@@ -102,10 +102,25 @@ app.layout = html.Div(
                         dbc.CardHeader(
                             html.H1("Sketch", className="card-text"), style={"width": "25rem", 'textAlign': 'center'}),
                                 html.Div(id='output-image-upload', style = {'textAlign': 'center',
-                                                                            'height': '680px',
-                                                                            'lineHeight': '60px',
-                                                                            'align-items': 'center'}), dbc.CardFooter(" ", style = {"width": "25rem"})], style = {'align-items': 'center', 
-                                                                                                                                                                  'width': '25rem'}), width = 3),               
+                                                                            'height': '650px',
+                                                                            'align-items': 'center'}), 
+                                    dbc.CardFooter(
+                                        html.Div(
+                                            [
+                                                dbc.Button("Update Sketch", id="open", color = "primary"),
+                                                dbc.Modal(
+                                                    [
+                                                        dbc.ModalHeader("WARNING"),
+                                                        #dbc.Row([
+                                                        dbc.ModalBody("Are you sure you want to update the sketch?"),
+                                                            dbc.Button("Update", id="close", className="ml-auto", color = "danger")   
+                                                        #    ])                                                   
+                                                    ],
+                                                    id="modal",
+                                                ),
+                                            ]
+                                        ), style = {"width": "25rem"})], style = {'align-items': 'center',
+                                                                                  'width': '25rem'}), width = 3),               
                 dbc.Col(
                     dbc.Card([
                         dbc.CardHeader(
@@ -210,6 +225,17 @@ def on_button_click(n, n2):
         return html.Img(src='data:image/png;base64,{}'.format(blank.decode()))
     
     
+    
+    
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(nn1, nn2, is_open):
+    if nn1 or nn2:
+        return not is_open
+    return is_open
 
 
 
@@ -220,8 +246,6 @@ def on_button_click(n, n2):
 
 if __name__ == '__main__':
     app.run_server()
-
-
 
 
 
