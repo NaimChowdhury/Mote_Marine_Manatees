@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep 16 20:16:08 2020
-
-@author: natewagner
-"""
-
-
-
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
