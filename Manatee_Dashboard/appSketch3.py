@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 22 11:04:28 2020
-
-@author: natewagner
-"""
-
-
 
 
 import dash
@@ -83,7 +74,7 @@ im_bytes = im_pil.tobytes()
 encoding_string = base64.b64encode(im_bytes).decode("ascii")
 
 
-
+y = []
 
 
 class Compare_ROIS(object):
@@ -94,9 +85,10 @@ class Compare_ROIS(object):
         self.roi = roi #[x1,y1,x2,y2]
         self.processed_images = None
     def compare_rois(self):
+        global y
         # get ROI array
         input_contour_info = []
-        for input_bb in self.roi:            
+        for input_bb in self.roi:  
             input_sketch_roi = self.input_sketch[int(input_bb[0]): int(input_bb[1]), int(input_bb[2]): int(input_bb[3])]
             # preprocess input sketch roi
             input_roi = self.preprocess(input_sketch_roi)        
@@ -106,6 +98,7 @@ class Compare_ROIS(object):
             input_shapes, input_area, input_num_contour, input_bb_dim = self.find_contours(input_contours[0], input_roi)
             input_contour_info.append([input_shapes, input_area, input_num_contour, input_bb_dim])
 #            Image.fromarray(input_roi).show()
+        y = input_roi
         distance_dict = []
     # First get all file names in list file_names
         for i in range(len(self.processed_images)):
@@ -116,12 +109,12 @@ class Compare_ROIS(object):
                 contours = cv2.findContours(sketch_roi , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                 # get contours rois in sketch roi                
                 contours_shapes, contour_area, num_contours, bb_dims  = self.find_contours(contours[0], sketch_roi)
-                try:                
-                    distances = self.compute_distances(input_contour_info[x][3], bb_dims)                    
-                    if distances != "NA":
-                        distance_dict.append((str(self.processed_images[i][0]), distances))        
-                except:
-                    continue                
+                #try:    
+                distances = self.compute_distances(input_contour_info[x][3], bb_dims)  
+                if distances != "NA":
+                    distance_dict.append((str(self.processed_images[i][0]), distances))        
+                #except:
+                #    continue                
         distance_dict_df = pd.DataFrame(distance_dict)
         unique_names_cnts = distance_dict_df.groupby(0)[1].agg(['count', 'mean'])
         unique_names_cnts['names'] = unique_names_cnts.index
@@ -147,16 +140,21 @@ class Compare_ROIS(object):
             #filled = cv2.fillPoly(sketch_roi.copy(), contours_list, 255)           
             x, y, w, h = cv2.boundingRect(contour)
             roi = sketch_roi[y:y + h, x:x + w]
+            # aspect ratio
+            aspect_ratio = float(w)/h                        
             # contour center coordinates
             contour_x = round(x + (w/2)) 
             contour_y = round(y + (h/2))               
             area = cv2.contourArea(contour)  
+            # extent
+            rect_area = w*h
+            extent = float(area)/rect_area
             avg_pixel = np.sum(roi)
             if area > 20 and len(contour) >= 5:
                 (x,y), (MA,ma), angle = cv2.fitEllipse(contour)
                 contours_rois.append(roi)
                 contour_area.append(area)
-                bb_dims.append([np.array([w,h]), area, angle, np.array([MA,ma]), np.array([contour_x, contour_y]), avg_pixel]) 
+                bb_dims.append([np.array([w,h]), area, angle, np.array([MA,ma]), np.array([contour_x, contour_y]), avg_pixel, aspect_ratio, extent]) 
                 num_contours += 1
         return contours_rois, contour_area, num_contours, bb_dims    
     def compute_distances(self, input_contours_shape, contours_shape):
@@ -166,7 +164,8 @@ class Compare_ROIS(object):
             return 'NA'
         if num_input_scars == 0 and num_scars == 0:
             return 0
-        if num_input_scars != 0 and num_scars != 0:
+        #if num_input_scars != 0 and num_scars != 0:
+        if num_input_scars <= num_scars and num_scars < num_input_scars+3:
             comparisons = []
             for shape in input_contours_shape:                
                 for num, shape2 in enumerate(contours_shape):
@@ -176,7 +175,11 @@ class Compare_ROIS(object):
                     input_MA, input_ma = shape[3]  
                     MA, ma = shape2[3]
                     input_x, input_y = shape[4]
-                    x,y = shape2[4]                   
+                    x,y = shape2[4]    
+                    input_aspect = shape[6]
+                    aspect = shape2[6]
+                    input_extent = shape[7]
+                    extent = shape2[7]                    
                     # Compute percentage differences for each feature
                     diff_in_x = abs(input_x - x)
                     percentage_in_x = (100*diff_in_x)/input_x
@@ -186,12 +189,16 @@ class Compare_ROIS(object):
                     percentage_MA = (100*diff_in_MA)/input_MA
                     diff_in_ma = abs(input_ma - ma)/ input_ma
                     percentage_ma = (100*diff_in_ma)/input_ma
+                    diff_in_aspect = abs(input_aspect - aspect)/ input_aspect
+                    percentage_aspect = (100*diff_in_aspect)/input_aspect
+                    diff_in_extent = abs(input_extent - extent)/ input_extent
+                    percentage_extent = (100*diff_in_extent)/input_extent                    
                     #diff_in_pixs = abs(shape[5] - shape2[5])
                     #percentage_area = (100*(diff_in_pixs))/shape[5]
                     diff_in_angle = abs(shape[2] - shape2[2])
                     percentage_angle = (100*(diff_in_angle))/shape[2]
                     #comparisons.append(np.mean([percentage_area, percentage_angle, percentage_MA, percentage_ma, percentage_in_x, percentage_in_y]))
-                    comparisons.append([num, 1/6*(1*percentage_angle + 1 * percentage_MA + 1 * percentage_ma + 1 * percentage_in_x + 1 * percentage_in_y)])
+                    comparisons.append([num, 1/6*(1*percentage_angle + 1 * percentage_MA + 1 * percentage_ma + 1 * percentage_aspect + 1 * percentage_extent + 1 * percentage_in_x + 1 * percentage_in_y)])
             if len(comparisons) != 0:
                 distances = self.computeScore(comparisons, num_input_scars)                                    
             return np.mean(distances)
@@ -224,7 +231,10 @@ class Compare_ROIS(object):
         self.processed_images = processed_images
     def computeScore(self, dist, num_input_scars):        
         scores = []
+        num_lookup_scars = len(list(set([el[0] for el in dist]))) 
         while len(scores) <= num_input_scars - 1:
+            if len(scores) >= num_lookup_scars:
+                break
             current_lowest = dist[np.argmin([el[1] for el in dist])]        
             if len(dist) != 0:
                 scores.append(current_lowest)
@@ -573,7 +583,7 @@ def update_data(string, image):
             else:
                 continue
         
-        print(bounding_box_list)
+
         if is_rect == False:
             bounding_box_list.append((0, 559, 0, 259))
         
