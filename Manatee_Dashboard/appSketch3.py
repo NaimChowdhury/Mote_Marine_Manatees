@@ -3,37 +3,28 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-from matplotlib import pyplot as plt
-import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 import cv2
-import plotly.express as px
-from skimage import io
-from Manatee_Dashboard import dash_reusable_componets as drc
-from PIL import ImageFilter  
 import base64
-from io import BytesIO
 import os
 import json
 import numpy as np
 from dash_canvas import DashCanvas
-import dash_daq as daq
-from dash_canvas.utils import array_to_data_url, parse_jsonstring, segmentation_generic
-from dash.exceptions import PreventUpdate
-from dash_canvas.utils.io_utils import image_string_to_PILImage
-import torchvision
-import torchvision.transforms as transforms                         
-import torch
-import torch.nn as nn
-import operator
-import torch.nn.functional as F
-import skimage.measure
-import math
-from skimage.morphology import skeletonize
+from dash_canvas.utils import parse_jsonstring
 import pandas as pd
+from PIL import Image
+
+
 ######################################################################################################
+
+
+### Needed Paths ###
+path_to_images = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/'
+path_to_mask = '/Users/natewagner/Documents/Mote_Manatee_Project/canny_filled2.png'
+path_to_blank = '/Users/natewagner/Documents/Mote_Manatee_Project/data/BLANK_SKETCH_updated.jpg'
+
+
 
 
 def Navbar():
@@ -51,30 +42,21 @@ def Navbar():
 
 
 
-path = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/' 
-
+# get database and image info
 num_returned = 0
 name_info = None
 images = []
 names = []
-for image in os.listdir(path):
-    #print("loading image: " + image)
-    im = cv2.imread(path + image)
+for image in os.listdir(path_to_images):
+    im = cv2.imread(path_to_images + image)
     name = image
     images.append(im)
-    names.append(name)
-    
-    
+    names.append(name)    
 names = np.array(names)  
 
 
-from PIL import Image
-im_pil = Image.fromarray(images[1])
-im_bytes = im_pil.tobytes()
-encoding_string = base64.b64encode(im_bytes).decode("ascii")
 
 
-y = []
 
 
 class Compare_ROIS(object):
@@ -85,7 +67,6 @@ class Compare_ROIS(object):
         self.roi = roi #[x1,y1,x2,y2]
         self.processed_images = None
     def compare_rois(self):
-        global y
         # get ROI array
         input_contour_info = []
         for input_bb in self.roi:  
@@ -98,7 +79,7 @@ class Compare_ROIS(object):
             input_shapes, input_area, input_num_contour, input_bb_dim = self.find_contours(input_contours[0], input_roi)
             input_contour_info.append([input_shapes, input_area, input_num_contour, input_bb_dim])
 #            Image.fromarray(input_roi).show()
-        y = input_roi
+
         distance_dict = []
     # First get all file names in list file_names
         for i in range(len(self.processed_images)):
@@ -124,12 +105,12 @@ class Compare_ROIS(object):
         returned_list = sorted(returned_list, key = lambda x: x[1])         
         return returned_list
     def preprocess(self, img):
+        # blur
+        img = cv2.blur(img, (2,2))
         # black background
         img = cv2.bitwise_not(img)
         # threshold
-        _,img = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
-        # blur
-        img = cv2.blur(img, (2,2))
+        _,img = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)        
         return img
     def find_contours(self, contours_list, sketch_roi):
         contours_rois = []
@@ -198,7 +179,7 @@ class Compare_ROIS(object):
                     diff_in_angle = abs(shape[2] - shape2[2])
                     percentage_angle = (100*(diff_in_angle))/shape[2]
                     #comparisons.append(np.mean([percentage_area, percentage_angle, percentage_MA, percentage_ma, percentage_in_x, percentage_in_y]))
-                    comparisons.append([num, 1/6*(1*percentage_angle + 1 * percentage_MA + 1 * percentage_ma + 1 * percentage_aspect + 1 * percentage_extent + 1 * percentage_in_x + 1 * percentage_in_y)])
+                    comparisons.append([num, 1/7*(0.10 * percentage_angle + 0.05 * percentage_MA + 0.05 * percentage_ma + 0 * percentage_aspect + 0 * percentage_extent + 0.40 * percentage_in_x + 0.40 * percentage_in_y)])
             if len(comparisons) != 0:
                 distances = self.computeScore(comparisons, num_input_scars)                                    
             return np.mean(distances)
@@ -242,72 +223,29 @@ class Compare_ROIS(object):
         return np.sum([el[1] for el in scores])
 
 
-
-path_to_images = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/'
-path_to_mask = '/Users/natewagner/Documents/Mote_Manatee_Project/canny_filled2.png'
-
 # initiate class:
 find_matches_func = Compare_ROIS(path_to_images, None, None, path_to_mask)
 find_matches_func.preLoadData()
-Image.fromarray(find_matches_func.processed_images[0][1])
-
-
-
-
-def getRowColIndex(matrix):
-    row_num = 0
-    col_num = 0
-    
-    for i in matrix:
-        if (i == 0).all():
-            row_num += 1
-        else:
-            break
-    
-    for i in matrix.T:
-        if (i == 0).all():
-            col_num += 1
-        else:
-            break
-    return [row_num, col_num]
 
 
 ######################################################################################################
 
 
-
-
-img_size = 100
-
-
+# LITERA
+app = dash.Dash(external_stylesheets=[dbc.themes.LITERA])
 
 
 
 
-width = 259
-height = 559
-new_matches = None
-
-        
+# dash canvas info
+filename = Image.open(path_to_blank)
+canvas_width = 259   # this has to be set to 259 because we use the dash as input to the model
 
 
 
-
-
-
-
-
-
-
-
-app = dash.Dash(external_stylesheets=[dbc.themes.LITERA], assets_folder='/Users/natewagner/Documents/Mote_Manatee_Project/Manatee_Dashboard/assets/')
-
-filename = app.get_asset_url("BLANK_SKETCH_updated.jpg")
-
-
-
-blank = os.getcwd() + '/Mote_Manatee_Project/BLANK_SKETCH_updated.jpg'
-canvas_width = 259
+score_html = "NA"
+n_html = "NA"
+num_matches_html = "NA"
 
 
 
@@ -414,7 +352,9 @@ app.layout = html.Div(
                                                        'margin': '40px',
                                                        'align-items': 'center',
                                                        'margin-top': '20px'}),
-                                               # dbc.CardFooter(), #"Probability: 98%, Matches: 35", style={"width": "50rem"}
+                                                dbc.CardFooter(dbc.Row([
+                                                    dbc.Col(html.Div(id = 'sketch_output_info1'), width = 6),
+                                                                        dbc.Col(html.Div(id = 'sketch_output_info2'), width = 6)]))
                                 ], style={"width": "50rem",
                                           "align-items": "center"}),  width = 6),
                             ]
@@ -423,59 +363,48 @@ app.layout = html.Div(
                 )
 
 
+last_right = False
+blank = base64.b64encode(open(path_to_blank, 'rb').read())
 
-                                                
-
-
-
-def parse_contents(contents, filename, date):
-    string = contents.split(";base64,")[-1]
-    decoded = base64.b64decode(string)
-    buffer = BytesIO(decoded)
-    im_pil = Image.open(buffer)
-    #test = drc.DisplayImagePIL("Manatee ID", im_pil)
-    return html.Div([
-        html.Br(),
-        html.H5("Manatee ID:     " + filename[0:-4]),
-        html.Img(src=contents),
-    ])
-
-
-@app.callback(Output('output-image-upload', 'children'),
-              [Input('upload-image', 'contents')],
-              [State('upload-image', 'filename'),
-               State('upload-image', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
-        return children
-
-
-
-
-
-
-image_filename2 = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/' # replace with your own image
-encoded_image2 = base64.b64encode(open(image_filename2 + names[0], 'rb').read())
-blank = base64.b64encode(open('/Users/natewagner/Documents/Mote_Manatee_Project/data/BLANK_SKETCH_updated.jpg', 'rb').read())
-
-def return_image(n):
-    image_filename2 = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/'
+def return_image(n, left = False, init = False):
+    global path_to_images
     global names
     global num_returned
-    file = names[n]
+    global count
+    global last_right
+    global score_html, n_html, num_matches_html
+        
+
+    if left == False and init == True:
+        file = names[n]
+        count += 1
+        last_right = True
+
+    if left == True and init == True:  
+        if last_right == True:
+            n = n-2
+            last_right = False
+        else:
+            n = n-1
+        count -= 1
+        file = names[n]
+
     
-    encoded_image = base64.b64encode(open(image_filename2 + file, 'rb').read())
+    if init == False:
+        file = names[n]
+        
+    encoded_image = base64.b64encode(open(path_to_images + file, 'rb').read())
     if name_info is None:
         return html.Div([
-        html.H5("Manatee ID: " + names[n][0:-4]),
+        html.H5(names[n][0:-4]),
         html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
         ], style = {'align-items': 'center'})
     else:
+        score_html = str(round(name_info[n], 3))
+        n_html = str(1+n)
+        num_matches_html = str(num_returned)
         return html.Div([
-            html.H5("Manatee ID: " + names[n][0:-4] + "   " + "Score: " + str(round(name_info[n], 3)) + "  Matches: " + str(num_returned)),
+            html.H5(str(file)[0:-4]),
             html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
             ], style = {'align-items': 'center'})
 
@@ -484,11 +413,12 @@ def return_image(n):
 
 
 count = 0
-count2 = 0
 switch = False
 
 @app.callback(
-    Output("sketch_output", "children"),
+    [Output("sketch_output", "children"),
+     Output("sketch_output_info1", "children"),
+     Output("sketch_output_info2", "children")],
     [
      Input("right_click", "n_clicks"),
      Input("left_click", "n_clicks"),
@@ -499,24 +429,24 @@ def on_button_click(n, n2, run):
     global count
     global switch
     global names
+    global score_html, n_html, num_matches_html
+    
     if switch == True:
         return_image(0)        
         count = 0
         switch = False   
-        
-    if count == len(names) - 1:
+                    
+    if abs(count) == len(names):
         count = 0
-    #print("N is ", n2, "N2 is ", n)
+
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    #print(changed_id)
+
     if "right_click" in changed_id:
-        count += 1
-        return return_image(count)
+        return return_image(count, left = False, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     if "left_click" in changed_id:
-        count -= 1
-        return return_image(count)
+        return return_image(count, left = True, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     else:
-        return html.Img(src='data:image/png;base64,{}'.format(blank.decode()))
+        return html.Img(src='data:image/png;base64,{}'.format(blank.decode())), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     
     
     
@@ -554,7 +484,6 @@ t = None
                 [Input('canvas', 'json_data')],
                 [State('canvas', 'image_content')])
 def update_data(string, image):    
-    global new_matches
     global name_info
     global names
     global switch
@@ -568,8 +497,7 @@ def update_data(string, image):
     if string:
         data = json.loads(string)
         bb_info = data['objects'][1:]  
-        #print(bb_info)        
- 
+       
         bounding_box_list = []
         
         for i in bb_info:
@@ -587,35 +515,24 @@ def update_data(string, image):
         if is_rect == False:
             bounding_box_list.append((0, 559, 0, 259))
         
-        mask = parse_jsonstring(string, shape=(height, width))
+        mask = parse_jsonstring(string, shape=(559, 259))
         mask = (~mask.astype(bool)).astype(int)
         mask[mask == 1] = 255
         mask = mask.astype(np.uint8)
 
-        #cropped_mask = mask[int(bounding_box[0]): int(bounding_box[1]), int(bounding_box[2]): int(bounding_box[3])]
-        
+
         find_matches_func.input_sketch = mask
         find_matches_func.roi = bounding_box_list
         matches = find_matches_func.compare_rois()
         t = matches
         is_rect = False
         
-       # matches = find_matches(cropped_mask)
         
-        names1 = []
-        for i in matches:
-            names1.append(i[0])
-        names = names1    
-        
-        new_matches = matches
-        
+        names = [i[0] for i in matches]
         name_info = [i[1] for i in matches]
-        num_returned = len(matches)
-        #image_string = array_to_data_url((255 * new_sketch).astype(np.uint8))
+        num_returned = len(matches)        
         
-
-        
-    return #array_to_data_url((255 * data).astype(np.uint8))
+    return
 
 
 
