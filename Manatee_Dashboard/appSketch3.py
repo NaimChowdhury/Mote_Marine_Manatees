@@ -14,6 +14,7 @@ from dash_canvas import DashCanvas
 from dash_canvas.utils import parse_jsonstring
 import pandas as pd
 from PIL import Image
+import dash_daq as daq
 
 
 ######################################################################################################
@@ -30,11 +31,12 @@ path_to_blank = '/Users/natewagner/Documents/Mote_Manatee_Project/data/BLANK_SKE
 def Navbar():
     navbar = dbc.NavbarSimple(
         children=[
-            dbc.NavItem(dbc.NavLink("Home", href="/index")),
-            dbc.NavItem(dbc.NavLink("Database", href="/index")),           
+            #dbc.NavItem(dbc.NavLink("Home", href="/index")),
+            #dbc.NavItem(dbc.NavLink("Database", href="/index")),           
         ],
         brand="Manatee Identification",
         color="primary",
+        expand = 'sm',
         dark=True,
     )
     return navbar
@@ -170,16 +172,16 @@ class Compare_ROIS(object):
                     percentage_MA = (100*diff_in_MA)/input_MA
                     diff_in_ma = abs(input_ma - ma)/ input_ma
                     percentage_ma = (100*diff_in_ma)/input_ma
-                    diff_in_aspect = abs(input_aspect - aspect)/ input_aspect
-                    percentage_aspect = (100*diff_in_aspect)/input_aspect
-                    diff_in_extent = abs(input_extent - extent)/ input_extent
-                    percentage_extent = (100*diff_in_extent)/input_extent                    
+                    #diff_in_aspect = abs(input_aspect - aspect)/ input_aspect
+                    #percentage_aspect = (100*diff_in_aspect)/input_aspect
+                    #diff_in_extent = abs(input_extent - extent)/ input_extent
+                    #percentage_extent = (100*diff_in_extent)/input_extent                    
                     #diff_in_pixs = abs(shape[5] - shape2[5])
                     #percentage_area = (100*(diff_in_pixs))/shape[5]
                     diff_in_angle = abs(shape[2] - shape2[2])
                     percentage_angle = (100*(diff_in_angle))/shape[2]
                     #comparisons.append(np.mean([percentage_area, percentage_angle, percentage_MA, percentage_ma, percentage_in_x, percentage_in_y]))
-                    comparisons.append([num, 1/7*(0.10 * percentage_angle + 0.05 * percentage_MA + 0.05 * percentage_ma + 0 * percentage_aspect + 0 * percentage_extent + 0.40 * percentage_in_x + 0.40 * percentage_in_y)])
+                    comparisons.append([num, 1/5*(0.10 * percentage_angle + 0.50 * percentage_MA + 0.30 * percentage_ma + 0.05 * percentage_in_x + 0.05 * percentage_in_y)])
             if len(comparisons) != 0:
                 distances = self.computeScore(comparisons, num_input_scars)                                    
             return np.mean(distances)
@@ -267,7 +269,7 @@ app.layout = html.Div(
                                     id='canvas',
                                     width=canvas_width,
                                     filename=filename,
-                                    #hide_buttons=['line', 'select'],
+                                    hide_buttons=['line', 'select'],
                                     goButtonTitle="Enter"
                                     )
                                 ], className="six columns", style = {"margin-left": "50px"}), width = 8),
@@ -275,30 +277,24 @@ app.layout = html.Div(
                             dbc.Row([
                             dbc.Card([
                                 #dbc.CardHeader(html.H6("Toolbox", className="card-text"), style={'textAlign': 'center'}),                                
-                                    html.H6(children=['Orientation'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                
-                                    dcc.Slider(
-                                        id='slider1',
-                                        min=1,
-                                        max=40,
-                                        step=1,
-                                        value=1
-                                    ), 
-                                    html.H6(children=['Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
-                                    dcc.Slider(
-                                        id='slider2',
-                                        min=1,
-                                        max=40,
-                                        step=1,
-                                        value=1
-                                    ), 
-                                    html.H6(children=['Height'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
-                                    dcc.Slider(
-                                        id='slider3',
-                                        min=1,
-                                        max=40,
-                                        step=1,
-                                        value=1
-                                    ),                                 
+                                    #html.H6(children=['Orientation'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                
+                                    daq.BooleanSwitch(
+                                            id='my-boolean-switch',
+                                            label="Orientation",
+                                            on=True
+                                        ),
+                                    #html.H6(children=['Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
+                                    daq.BooleanSwitch(
+                                            id='my-boolean-switch1',
+                                            label="Width",                                            
+                                            on=True
+                                        ),
+                                    #html.H6(children=['Height'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
+                                    daq.BooleanSwitch(
+                                            id='my-boolean-switch2',
+                                            label="Height",                                            
+                                            on=True
+                                        ),                                
                                 html.Div([
                                     html.H6(children=['Brush Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),
                                     dcc.Slider(
@@ -306,7 +302,7 @@ app.layout = html.Div(
                                         min=1,
                                         max=40,
                                         step=1,
-                                        value=1
+                                        value=1,
                                     ),                                         
                                     html.H6(children=['Brush Color'], style={'textAlign': 'center', 'font-weight': 'normal'}),
                                     dcc.RadioItems(
@@ -331,11 +327,16 @@ app.layout = html.Div(
                                     #         inputStyle={"margin-right": "10px"},
                                     #         style={'textAlign': 'left', 'font-weight': 'normal', 'font-size' : '15'}
                                     # ) 
-                        ], style = {"margin-top": "10px"}, className="three columns")], style = {'width': '20rem', 'margin-top': '50px', 'margin-right': '100px'}),    
+                        ], style = {"margin-top": "10px"}, className="three columns")], style = {'width': '20rem', 'margin-top': '50px', 'margin-right': '100px', 'display': 'inline-block',
+                                          'box-shadow': '8px 8px 8px grey',
+                                          'margin-bottom': '10px',
+                                          'margin-left': '10px'}),    
                         ]), width = 4)]),
                         
                         
-                    ], style = {'align-items': 'center', 'width': '50rem', 'margin-left': '40px'}), width = 6),               
+                    ], style = {'align-items': 'center', 'width': '50rem', 'margin-left': '40px', 'display': 'inline-block',
+                                          'box-shadow': '8px 8px 8px grey',
+                                          'margin-bottom': '10px'}), width = 6),               
                 dbc.Col(
                     dbc.Card([
                         dbc.CardHeader(
@@ -356,10 +357,14 @@ app.layout = html.Div(
                                                     dbc.Col(html.Div(id = 'sketch_output_info1'), width = 6),
                                                                         dbc.Col(html.Div(id = 'sketch_output_info2'), width = 6)]))
                                 ], style={"width": "50rem",
-                                          "align-items": "center"}),  width = 6),
+                                          "align-items": "center",
+                                          'display': 'inline-block',
+                                          'box-shadow': '8px 8px 8px grey',
+                                          'margin-bottom': '10px',
+                                          'margin-left': '10px'}),  width = 6),
                             ]
                         ),
-                    ]
+                    ], style={'padding': '0px 40px 40px 40px'}
                 )
 
 
