@@ -1,5 +1,6 @@
 
 
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -234,7 +235,7 @@ find_matches_func.preLoadData()
 
 
 # LITERA
-app = dash.Dash(external_stylesheets=[dbc.themes.LITERA])
+app = dash.Dash(__name__, meta_tags=[{"content": "width=device-width"}], external_stylesheets=[dbc.themes.LITERA])
 
 
 
@@ -255,117 +256,137 @@ app.layout = html.Div(
     [
      Navbar(),
      html.Br(),
-     html.Br(),
      dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Card([
-                        dbc.CardHeader(
-                            html.H1("Sketch", className="card-text"), style={"width": "50rem", 'textAlign': 'center'}),
-                        dbc.Row([
-                        dbc.Col(
-                            html.Div([
-                                DashCanvas(
-                                    id='canvas',
-                                    width=canvas_width,
-                                    filename=filename,
-                                    hide_buttons=['line', 'select'],
-                                    goButtonTitle="Enter"
-                                    )
-                                ], className="six columns", style = {"margin-left": "50px"}), width = 8),
-                        dbc.Col(
-                            dbc.Row([
-                            dbc.Card([
-                                #dbc.CardHeader(html.H6("Toolbox", className="card-text"), style={'textAlign': 'center'}),                                
-                                    #html.H6(children=['Orientation'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                
-                                    daq.BooleanSwitch(
-                                            id='my-boolean-switch',
-                                            label="Orientation",
-                                            on=True
-                                        ),
-                                    #html.H6(children=['Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
-                                    daq.BooleanSwitch(
-                                            id='my-boolean-switch1',
-                                            label="Width",                                            
-                                            on=True
-                                        ),
-                                    #html.H6(children=['Height'], style={'textAlign': 'center', 'font-weight': 'normal'}),                                    
-                                    daq.BooleanSwitch(
-                                            id='my-boolean-switch2',
-                                            label="Height",                                            
-                                            on=True
-                                        ),                                
-                                html.Div([
-                                    html.H6(children=['Brush Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),
-                                    dcc.Slider(
-                                        id='bg-width-slider',
-                                        min=1,
-                                        max=40,
-                                        step=1,
-                                        value=1,
-                                    ),                                         
-                                    html.H6(children=['Brush Color'], style={'textAlign': 'center', 'font-weight': 'normal'}),
-                                    dcc.RadioItems(
-                                            id='color-picker',
-                                            options=[
-                                                {'label': 'Black', 'value': dict(hex='#000000')},
-                                                {'label': 'Grey', 'value': dict(hex='#666666')},
-                                            ],
-                                            value=dict(hex='#000000'),
-                                            labelStyle={'display': 'inline-block', 'margin-right': '20px', 'margin-left': '20px', 'font-weight': 300},
-                                            inputStyle={"margin-right": "10px"},
-                                            style={'textAlign': 'center', 'font-weight': 'normal', 'font-size' : '15'}
-                                        ),
-                                    # dcc.Checklist(
-                                    #     options=[
-                                    #         {'label': 'New York City', 'value': 'NYC'},
-                                    #         {'label': 'Montréal', 'value': 'MTL'},
-                                    #         {'label': 'San Francisco', 'value': 'SF'}
-                                    #     ],
-                                    #     value=['NYC', 'MTL'],
-                                    #         labelStyle={'display': 'inline-block', 'margin-right': '20px', 'margin-left': '20px', 'font-weight': 300},
-                                    #         inputStyle={"margin-right": "10px"},
-                                    #         style={'textAlign': 'left', 'font-weight': 'normal', 'font-size' : '15'}
-                                    # ) 
-                        ], style = {"margin-top": "10px"}, className="three columns")], style = {'width': '20rem', 'margin-top': '50px', 'margin-right': '100px', 'display': 'inline-block',
-                                          'box-shadow': '8px 8px 8px grey',
-                                          'margin-bottom': '10px',
-                                          'margin-left': '10px'}),    
-                        ]), width = 4)]),
-                        
-                        
-                    ], style = {'align-items': 'center', 'width': '50rem', 'margin-left': '40px', 'display': 'inline-block',
-                                          'box-shadow': '8px 8px 8px grey',
-                                          'margin-bottom': '10px'}), width = 6),               
-                dbc.Col(
-                    dbc.Card([
-                        dbc.CardHeader(
-                            html.H1("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "50rem"}),
-                                html.Div([
-                                    dbc.Row(
+         [
+             dbc.Col(
+                 dbc.Card(
+                     [
+                     dbc.CardHeader(
+                     html.H1("Sketch", className="card-text"), style={"width": "50rem", 'textAlign': 'center'}),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    html.Div(
+                                        [
+                                            DashCanvas(
+                                                id='canvas',
+                                                width=canvas_width,
+                                                filename=filename,
+                                                hide_buttons=['line', 'select'],
+                                                goButtonTitle="Enter"
+                                                )
+                                        ], 
+                                        className="six columns", style = {"margin-left": "50px"}),
+                                    width = 8),
+                                 dbc.Col(
+                                     dbc.Row(
+                                         [
+                                             dbc.Card(
+                                                 [
+                    
+                                                    daq.BooleanSwitch(
+                                                            id='my-boolean-switch',
+                                                            label="Orientation",
+                                                            on=True
+                                                        ),
+                                                    daq.BooleanSwitch(
+                                                            id='my-boolean-switch1',
+                                                            label="Width",                                            
+                                                            on=True
+                                                        ),
+                                                    daq.BooleanSwitch(
+                                                            id='my-boolean-switch2',
+                                                            label="Height",                                            
+                                                            on=True
+                                                        ),                                
+                                                    html.Div(
+                                                        [
+                                                        html.H6(children=['Brush Width'], style={'textAlign': 'center', 'font-weight': 'normal'}),
+                                                            dcc.Slider(
+                                                                id='bg-width-slider',
+                                                                min=1,
+                                                                max=40,
+                                                                step=1,
+                                                                value=1,
+                                                            ),                                         
+                                                        html.H6(children=['Brush Color'], style={'textAlign': 'center', 'font-weight': 'normal'}),
+                                                            dcc.RadioItems(
+                                                                    id='color-picker',
+                                                                    options=[
+                                                                        {'label': 'Black', 'value': dict(hex='#000000')},
+                                                                        {'label': 'Grey', 'value': dict(hex='#666666')},
+                                                                    ],
+                                                                    value=dict(hex='#000000'),
+                                                                    labelStyle={'display': 'inline-block', 'margin-right': '20px', 'margin-left': '20px', 'font-weight': 300},
+                                                                    inputStyle={"margin-right": "10px"},
+                                                                    style={'textAlign': 'center', 'font-weight': 'normal', 'font-size' : '15'}
+                                                                ),
+                                                            ],
+                                                            style = {"margin-top": "10px"}, className="three columns")
+                                                    ],
+                                                 style = {'width': '20rem',
+                                                          'margin-top': '50px',
+                                                          'margin-right': '100px',
+                                                          'display': 'inline-block',                                      
+                                                          'box-shadow': '8px 8px 8px grey',
+                                                          'margin-bottom': '10px',
+                                                          'margin-left': '10px'}),    
+                                            ]),
+                                             width = 4)]),                                                                                        
+                    ],
+                    style = {'align-items': 'center',
+                             'width': '50rem',
+                             'margin-left': '40px',
+                             'display': 'inline-block',
+                             'box-shadow': '8px 8px 8px grey',
+                             'margin-bottom': '10px'}
+                    ), width = 6),               
+             dbc.Col(
+                 dbc.Card(
+                     [
+                         dbc.CardHeader(
+                         html.H1("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "50rem"}
+                         ),
+                         html.Div(
+                             [
+                                 dbc.Row(
                                         [
                                             dbc.Col(dbc.Row([dbc.Button("Left", id="left_click", color="primary", className="mr-2", n_clicks = 0, size="lg")]), style = {'Align': 'left', 'vertical-align': 'middle'}, width = 2),
                                             dbc.Col(html.Span(id="sketch_output", style={"vertical-align": "middle"}), width = 8),
                                             dbc.Col(dbc.Row([dbc.Button("Right", id="right_click", color="primary", className="mr-2", n_clicks = 0, size="lg")]), style = {'Align': 'right', 'vertical-align': 'middle'}, width = 2),
-                                        ]),], style = {'textAlign': 'center',
-                                                       'width': '80%',
-                                                       'height': '600px',
-                                                       'margin': '40px',
-                                                       'align-items': 'center',
-                                                       'margin-top': '20px'}),
-                                                dbc.CardFooter(dbc.Row([
-                                                    dbc.Col(html.Div(id = 'sketch_output_info1'), width = 6),
-                                                                        dbc.Col(html.Div(id = 'sketch_output_info2'), width = 6)]))
-                                ], style={"width": "50rem",
-                                          "align-items": "center",
-                                          'display': 'inline-block',
-                                          'box-shadow': '8px 8px 8px grey',
-                                          'margin-bottom': '10px',
-                                          'margin-left': '10px'}),  width = 6),
-                            ]
-                        ),
-                    ], style={'padding': '0px 40px 40px 40px'}
-                )
+                                        ]
+                                    ),
+                             ],
+                             style = {'textAlign': 'center',
+                                      'width': '80%',
+                                      'height': '600px',
+                                      'margin': '40px',
+                                      'align-items': 'center',
+                                      'margin-top': '20px'}),
+                          dbc.CardFooter(
+                              dbc.Row(
+                                  [
+                                      dbc.Col(html.Div(id = 'sketch_output_info1'), width = 6),
+                                      dbc.Col(html.Div(id = 'sketch_output_info2'), width = 6)
+                                  ]
+                                  )
+                              )
+                     ],
+                     style={'width': '50rem',
+                            'align-items': 'center',
+                            'display': 'inline-block',
+                            'box-shadow': '8px 8px 8px grey',
+                            'margin-bottom': '10px',
+                            'margin-left': '10px'}
+                     ),
+                     width = 6),
+        ]
+        ),
+    ],
+    style={'padding': '0px 40px 0px 40px'}
+)
+
+
 
 
 last_right = False
