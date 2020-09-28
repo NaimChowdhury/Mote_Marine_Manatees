@@ -1,6 +1,5 @@
 
 
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -262,7 +261,7 @@ app.layout = html.Div(
                  dbc.Card(
                      [
                      dbc.CardHeader(
-                     html.H1("Sketch", className="card-text"), style={"width": "50rem", 'textAlign': 'center'}),
+                     html.H1("Sketch", className="card-text"), style={"width": "100%", 'textAlign': 'center'}),
                         dbc.Row(
                             [
                                 dbc.Col(
@@ -277,7 +276,7 @@ app.layout = html.Div(
                                                 )
                                         ], 
                                         className="six columns", style = {"margin-left": "50px"}),
-                                    width = 8),
+                                    md = 8),
                                  dbc.Col(
                                      dbc.Row(
                                          [
@@ -324,7 +323,7 @@ app.layout = html.Div(
                                                             ],
                                                             style = {"margin-top": "10px"}, className="three columns")
                                                     ],
-                                                 style = {'width': '20rem',
+                                                 style = {'width': '100%',
                                                           'margin-top': '50px',
                                                           'margin-right': '100px',
                                                           'display': 'inline-block',                                      
@@ -332,54 +331,63 @@ app.layout = html.Div(
                                                           'margin-bottom': '10px',
                                                           'margin-left': '10px'}),    
                                             ]),
-                                             width = 4)]),                                                                                        
+                                             md = 4)]),                                                                                        
                     ],
                     style = {'align-items': 'center',
-                             'width': '50rem',
-                             'margin-left': '40px',
+                             'width': '100%',
+                             #'margin-left': '40px',
                              'display': 'inline-block',
-                             'box-shadow': '8px 8px 8px grey',
-                             'margin-bottom': '10px'}
-                    ), width = 6),               
+                             'box-shadow': '8px 8px 8px grey'}
+                             #'margin-bottom': '10px'}
+                    ),
+                    md = 6),               
              dbc.Col(
                  dbc.Card(
                      [
                          dbc.CardHeader(
-                         html.H1("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "50rem"}
+                         html.H1("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "100%"}
                          ),
                          html.Div(
                              [
                                  dbc.Row(
                                         [
-                                            dbc.Col(dbc.Row([dbc.Button("Left", id="left_click", color="primary", className="mr-2", n_clicks = 0, size="lg")]), style = {'Align': 'left', 'vertical-align': 'middle'}, width = 2),
-                                            dbc.Col(html.Span(id="sketch_output", style={"vertical-align": "middle"}), width = 8),
-                                            dbc.Col(dbc.Row([dbc.Button("Right", id="right_click", color="primary", className="mr-2", n_clicks = 0, size="lg")]), style = {'Align': 'right', 'vertical-align': 'middle'}, width = 2),
+                                            dbc.Col(
+                                                dbc.Button("Left", id="left_click", color="primary", className="mr-2", n_clicks = 0, size="lg"),
+                                                    style = {'margin-top': '20px',
+                                                             'vertical-align': 'middle'},
+                                                md = 2),
+                                            dbc.Col(
+                                                html.Span(id="sketch_output", style={"vertical-align": "middle"}
+                                                ),
+                                                md = 8),
+                                            dbc.Col(
+                                                dbc.Button("Right", id="right_click", color="primary", className="mr-2", n_clicks = 0, size="lg"),
+                                                    style = {'margin-top': '20px',
+                                                             'vertical-align': 'middle'},
+                                                md = 2),
                                         ]
                                     ),
                              ],
                              style = {'textAlign': 'center',
-                                      'width': '80%',
-                                      'height': '600px',
-                                      'margin': '40px',
+                                      'width': '100%',
                                       'align-items': 'center',
-                                      'margin-top': '20px'}),
+                                      }),
                           dbc.CardFooter(
                               dbc.Row(
                                   [
-                                      dbc.Col(html.Div(id = 'sketch_output_info1'), width = 6),
-                                      dbc.Col(html.Div(id = 'sketch_output_info2'), width = 6)
+                                      dbc.Col(html.Div(id = 'sketch_output_info1'), md = 4),
+                                      dbc.Col(html.Div(id = 'sketch_output_info2'), md = 4),
+                                      dbc.Col(html.Div(id = 'sketch_output_info3'), md = 4)
                                   ]
                                   )
                               )
                      ],
-                     style={'width': '50rem',
+                     style={'width': '100%',
                             'align-items': 'center',
                             'display': 'inline-block',
-                            'box-shadow': '8px 8px 8px grey',
-                            'margin-bottom': '10px',
-                            'margin-left': '10px'}
+                            'box-shadow': '8px 8px 8px grey'}
                      ),
-                     width = 6),
+                     md = 6),
         ]
         ),
     ],
@@ -422,7 +430,7 @@ def return_image(n, left = False, init = False):
     encoded_image = base64.b64encode(open(path_to_images + file, 'rb').read())
     if name_info is None:
         return html.Div([
-        html.H5(names[n][0:-4]),
+        #html.H5(names[n][0:-4]),
         html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
         ], style = {'align-items': 'center'})
     else:
@@ -430,7 +438,7 @@ def return_image(n, left = False, init = False):
         n_html = str(1+n)
         num_matches_html = str(num_returned)
         return html.Div([
-            html.H5(str(file)[0:-4]),
+            #html.H5(str(file)[0:-4]),
             html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
             ], style = {'align-items': 'center'})
 
@@ -444,7 +452,8 @@ switch = False
 @app.callback(
     [Output("sketch_output", "children"),
      Output("sketch_output_info1", "children"),
-     Output("sketch_output_info2", "children")],
+     Output("sketch_output_info2", "children"),
+     Output("sketch_output_info3", "children")],
     [
      Input("right_click", "n_clicks"),
      Input("left_click", "n_clicks"),
@@ -468,11 +477,11 @@ def on_button_click(n, n2, run):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
     if "right_click" in changed_id:
-        return return_image(count, left = False, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+        return return_image(count, left = False, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(names[n][0:-4], style = {'width':'100%', 'textAlign': 'center'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     if "left_click" in changed_id:
-        return return_image(count, left = True, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+        return return_image(count, left = True, init = True), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(names[n][0:-4], style = {'width':'100%', 'textAlign': 'center'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     else:
-        return html.Img(src='data:image/png;base64,{}'.format(blank.decode())), html.H6('Score:    ' + str(score_html), style = {'width':'47.5rem', 'textAlign': 'left'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+        return html.Img(src='data:image/png;base64,{}'.format(blank.decode())), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(names[n][0:-4], style = {'width':'100%', 'textAlign': 'center'}),  html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     
     
     
