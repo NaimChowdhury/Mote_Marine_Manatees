@@ -15,11 +15,12 @@ from dash_canvas import DashCanvas
 from dash_canvas.utils import parse_jsonstring
 import pandas as pd
 from PIL import Image
-
+import time
 
 
 ######################################################################################################
 
+start = time.time()
 
 ### Needed Paths ###
 path_to_images = '/Users/natewagner/Documents/Mote_Manatee_Project/data/MMLDUs_BatchA/'
@@ -27,12 +28,12 @@ path_to_mask = '/Users/natewagner/Documents/Mote_Manatee_Project/canny_filled2.p
 path_to_blank = '/Users/natewagner/Documents/Mote_Manatee_Project/data/BLANK_SKETCH_updated.jpg'
 
 # slider 
-orientation_perc = 100
-MA_perc = 100
-ma_perc = 100
-area_perc = 100
-aspect_perc = 100
-loc_perc = 100
+orientation_perc = 1
+MA_perc = 1
+ma_perc = 1
+area_perc = 1
+aspect_perc = 1
+loc_perc = 1
 
 def Navbar():
     navbar = dbc.NavbarSimple(
@@ -230,6 +231,28 @@ class Compare_ROIS(object):
 find_matches_func = Compare_ROIS(path_to_images, None, None, path_to_mask, orientation_perc, MA_perc, ma_perc, area_perc, aspect_perc, loc_perc)
 find_matches_func.preLoadData()
 
+end = time.time()
+print(end - start)
+
+def readjust(weights):
+    """
+    Reparameterize max values for weight range.
+    """
+    new_weights = weights.copy()
+    for i, weight in enumerate(weights):
+        # We need all other weights except for the one we are currently
+        # looking at because we need to adjust them accordingly
+        amt_unused = 1 - weight
+        # add unused amount to other values proportionally
+        excess = amt_unused/(len(weights)-1)
+        before = new_weights[:i]
+        after = new_weights[i+1:]
+        before_arr = np.array(before)
+        after_arr = np.array(after)
+        new_weights[:i] = before_arr + excess
+        new_weights[i+1:] = after_arr + excess
+    return(new_weights)
+
 
 ######################################################################################################
 
@@ -262,7 +285,7 @@ app.layout = html.Div(
                  dbc.Card(
                      [
                      dbc.CardHeader(
-                     html.H1("Sketch", className="card-text"), style={"width": "100%", 'textAlign': 'center'}
+                     html.H4("Sketch", className="card-text"), style={"width": "100%", 'textAlign': 'center'}
                      ),
                          dbc.Row([
                                 dbc.Col(
@@ -285,13 +308,13 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.16,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ),
                                                     html.Div(id='hidden-div', style={'display':'none'}),
@@ -299,13 +322,13 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider1',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.20,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ),
                                                     html.Div(id='hidden-div2', style={'display':'none'}),                                                    
@@ -313,13 +336,13 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider2',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.16,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ),  
                                                     html.Div(id='hidden-div3', style={'display':'none'}),                                                    
@@ -327,13 +350,13 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider3',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.16,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ), 
                                                     html.Div(id='hidden-div4', style={'display':'none'}),                                                    
@@ -341,13 +364,13 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider4',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.16,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ),   
                                                     html.Div(id='hidden-div5', style={'display':'none'}), 
@@ -355,16 +378,18 @@ app.layout = html.Div(
                                                     dcc.Slider(
                                                         id='my-slider5',
                                                         min=0,
-                                                        max=1,
-                                                        step=0.01,
-                                                        value=0.16,
+                                                        max=2,
+                                                        step=0.10,
+                                                        value=1,
                                                         marks={
-                                                            0: {'label': '0%'},
-                                                            0.50: {'label': '50%'},                                                                
-                                                            1: {'label': '100%'}
+                                                            0: {'label': '0'},
+                                                            1: {'label': '1'},                                                                
+                                                            2: {'label': '2'}
                                                         }
                                                     ),   
-                                                    html.Div(id='hidden-div6', style={'display':'none'}),                                                     
+                                                    html.Div(id='hidden-div6', style={'display':'none'}), 
+                                                    #html.Hr(),
+                                                    dbc.Button(id="clear", children="Update Weights", style = {'width': '76%', 'margin-left': '25px', 'margin-right': '10px'}),
                                                     html.Span(id="slider-sum", style={"vertical-align": "middle"}),
                                                     html.Div(
                                                         [
@@ -395,7 +420,7 @@ app.layout = html.Div(
                                                             style = {"margin-top": "10px"}),                                                   
                                                     ],
                                                  style = {'width': '100%',
-                                                          'margin-top': '20px',
+                                                          'margin-top': '5px',
                                                           'margin-right': '100px',
                                                           'display': 'inline-block',                                      
                                                           'box-shadow': '4px 4px 4px grey'}
@@ -406,7 +431,7 @@ app.layout = html.Div(
                     ],
                     style = {'align-items': 'center',
                              'width': '100%',
-                             #'margin-left': '40px',
+                             #'height': '110%',
                              'display': 'inline-block',
                              'box-shadow': '8px 8px 8px grey'}
                              #'margin-bottom': '10px'}
@@ -416,7 +441,7 @@ app.layout = html.Div(
                  dbc.Card(
                      [
                          dbc.CardHeader(
-                         html.H1("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "100%"}
+                         html.H4("Browse Matches", className="card-text", style = {'textAlign': 'center'}), style={"width": "100%"}
                          ),
                          html.Div(
                              [
@@ -454,6 +479,7 @@ app.layout = html.Div(
                               )
                      ],
                      style={'width': '100%',
+                            #'height': '110%',                            
                             'align-items': 'center',
                             'display': 'inline-block',
                             'box-shadow': '8px 8px 8px grey'}
@@ -475,12 +501,16 @@ t = None
 
 
 @app.callback(Output('sketch_output', 'data'),
-                [Input('canvas', 'json_data')],
+                [Input('canvas', 'json_data'),
+                 Input('canvas', 'n_clicks')],
                 [State('canvas', 'image_content')])
-def update_data(string, image):    
+def update_data(string,image,n):    
     global name_info, names, switch, count, find_matches_func, num_returned, t    
     switch = True
     is_rect = False
+    print(string)
+    print(n)
+    print(image)
     if string:
         data = json.loads(string)
         bb_info = data['objects'][1:]         
@@ -577,13 +607,13 @@ def on_button_click(n, n2, run):
         if abs(count) == len(name_info):
             count = 0
         count += 1
-        return return_image(count), html.H4('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H4(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H4('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+        return return_image(count), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
     if "left_click" in changed_id:
         if count >= 2:
             count -= 1        
-            return return_image(count), html.H4('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H4(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H4('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+            return return_image(count), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
         else:
-            return return_image(count), html.H4('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H4(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H4('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
+            return return_image(count), html.H6('Score:    ' + str(score_html), style = {'width':'100%', 'textAlign': 'left'}), html.H6(name_html, style = {'width':'100%', 'textAlign': 'center'}), html.H6('Matches:    ' + str(n_html) + '/' + str(num_matches_html), style = {'textAlign': 'right'})
 
 
     
@@ -615,8 +645,8 @@ def update_canvas_linewidth(value):
             [Input('my-slider', 'value')])
 def update_orientation(value):
     global orientation_perc
+    orientation_perc = value
     find_matches_func.orien_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -625,8 +655,8 @@ def update_orientation(value):
             [Input('my-slider1', 'value')])
 def update_MA(value):
     global MA_perc
+    MA_perc = value
     find_matches_func.MA_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -635,8 +665,8 @@ def update_MA(value):
             [Input('my-slider2', 'value')])
 def update_ma(value):
     global ma_perc
+    ma_perc = value
     find_matches_func.ma_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -645,8 +675,8 @@ def update_ma(value):
             [Input('my-slider3', 'value')])
 def update_area(value):
     global area_perc
+    area_perc = value
     find_matches_func.area_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -655,8 +685,8 @@ def update_area(value):
             [Input('my-slider4', 'value')])
 def update_aspect(value):
     global aspect_perc
+    aspect_perc = value
     find_matches_func.aspect_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -665,8 +695,8 @@ def update_aspect(value):
             [Input('my-slider5', 'value')])
 def update_location(value):
     global loc_perc
+    loc_perc = value
     find_matches_func.loc_perc = value
-    print(value)
     return html.Div([
                 html.H5("test"),                
                 ], style = {'align-items': 'center'})
@@ -679,14 +709,25 @@ def update_location(value):
              Input('my-slider4', 'value'),
              Input('my-slider5', 'value')])
 def sum_slider(value,value1,value2,value3,value4,value5):
-    summ = round((value+value1+value2+value3+value4+value5)*100,2) 
+    summ = round((value+value1+value2+value3+value4+value5),2) 
     return html.Div([
                 html.Hr(),
                 html.H6(children=['Weights Sum: ' + str(summ)], style={'textAlign': 'center', 'font-weight': 'normal'}),                                                                        
                 html.Hr(),                
                 ], style = {'align-items': 'center'})
 
-
+@app.callback([Output('my-slider', 'value'),
+             Output('my-slider1', 'value'),
+             Output('my-slider2', 'value'),
+             Output('my-slider3', 'value'),
+             Output('my-slider4', 'value'),
+             Output('my-slider5', 'value')],
+             [Input('clear', 'n_clicks')])
+def updateSliders(value):
+    #print([orientation_perc,MA_perc,ma_perc,area_perc,aspect_perc,loc_perc])
+    new,new1,new2,new3,new4,new5 = readjust([orientation_perc,MA_perc,ma_perc,area_perc,aspect_perc,loc_perc])
+    #print(new,new1,new2,new3,new4,new5)
+    return new,new1,new2,new3,new4,new5
 
 if __name__ == '__main__':
     app.run_server()
